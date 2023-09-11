@@ -4,15 +4,15 @@ import rospy
 from turtle_patrol.srv import Patrol  # Import service type
 
 
-def patrol_client():
+def patrol_client(turtle_name):
     # Initialize the client node
     rospy.init_node('turtle1_patrol_client')
     # Wait until patrol service is ready
-    rospy.wait_for_service('/turtle1/patrol')
+    rospy.wait_for_service('/'+turtle_name+'patrol')
     try:
         # Acquire service proxy
         patrol_proxy = rospy.ServiceProxy(
-            '/turtle1/patrol', Patrol)
+            '/'+turtle_name+'/patrol', Patrol)
         vel = 2.0  # Linear velocity
         omega = 1.0  # Angular velocity
         rospy.loginfo('Command turtle1 to patrol')
@@ -23,5 +23,5 @@ def patrol_client():
 
 
 if __name__ == '__main__':
-    patrol_client()
+    patrol_client(str(sys.argv[1]))
 
