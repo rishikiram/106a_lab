@@ -25,7 +25,7 @@ def controller(turtlebot_frame, goal_frame):
   ################################### YOUR CODE HERE ##############
 
   #Create a publisher and a tf buffer, which is primed with a tf listener
-  pub = rospy.Publisher('INSTERT TOPIC HERE', Twist, queue_size=10)
+  pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
   tfBuffer = tf2_ros.Buffer()
   tfListener = tf2_ros.TransformListener(tfBuffer)
   
@@ -33,19 +33,28 @@ def controller(turtlebot_frame, goal_frame):
   # a 10Hz publishing rate
   r = rospy.Rate(10) # 10hz
 
-  K1 = 0.3
-  K2 = 1
+  K1 = 0.3/3
+  K2 = 1/3
   # Loop until the node is killed with Ctrl-C
   while not rospy.is_shutdown():
     try:
-      trans = tfBuffer.lookup_transform(INSERT FRAME HERE, INSERT FRAME HERE, rospy.Time())
+      trans = tfBuffer.lookup_transform(turtlebot_frame, goal_frame, rospy.Time())
 
       # Process trans to get your state error
       # Generate a control command to send to the robot
 
-      control_command = # Generate this
+      control_command = Twist()
+
+      control_command.linear.x = K1 * trans.transform.translation.x
+      control_command.linear.y = 0
+      control_command.linear.z = 0
+
+      control_command.angular.x = 0
+      control_command.angular.y = 0
+      control_command.angular.z = K2 * trans.transform.translation.y
 
       #################################### end your code ###############
+      print('about to pub', control_command.linear.x , control_command.angular.z)
 
       pub.publish(control_command)
     except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
