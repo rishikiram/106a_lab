@@ -103,6 +103,35 @@ def map_keyboard(side):
                                        key=lambda x: x[1][2]):
                     print("  %s: %s" % (key, val[2]))
 
+
+
+def set_theta(side):
+    limb = intera_interface.Limb(side)
+
+    try:
+        gripper = intera_interface.Gripper(side + '_gripper')
+    except:
+        has_gripper = False
+        rospy.loginfo("The electric gripper is not detected on the robot.")
+    else:
+        has_gripper = True
+
+    joints = limb.joint_names()
+
+    joint_command = [input('t0')]
+    current_position = [limb.joint_angle(joints[i]) for i in range(len(joints))]
+    join_command_np = np.array(joint_command)
+
+    current_position_np = np.array(current_position)
+    error = np.linalg.norm(join_command_np - current_position_np)
+    
+    while(error > 1)
+        limb.set_joint_position_speed(0.3)
+        limb.set_joint_positions(joint_command)
+        current_position_np = np.array([limb.joint_angle(joints[i]) for i in range(len(joints))])
+        error = np.linalg.norm(join_command_np - current_position_np)
+
+
 def main():
     """RSDK Joint Position Example: Keyboard Control
 
@@ -145,7 +174,9 @@ See help inside the example with the '?' key for key bindings.
 
     rospy.loginfo("Enabling robot...")
     rs.enable()
-    map_keyboard(args.limb)
+
+    set_theta(args.limb)
+    # map_keyboard(args.limb)
     print("Done.")
 
 
