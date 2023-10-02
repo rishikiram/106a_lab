@@ -51,14 +51,14 @@ class OccupancyGrid2d(object):
 
         # Dimensions and bounds.
         # TODO! You'll need to set values for class variables called:
-        # -- self._x_num
-        # -- self._x_min
-        # -- self._x_max
-        # -- self._x_res # The resolution in x. Note: This isn't a ROS parameter. What will you do instead?
-        # -- self._y_num
-        # -- self._y_min
-        # -- self._y_max
-        # -- self._y_res # The resolution in y. Note: This isn't a ROS parameter. What will you do instead?
+        self._x_num = rospy.get_param("~x/num")
+        self._x_min = rospy.get_param("~x/min")
+        self._x_max = rospy.get_param("~x/max")
+        self._x_res = (self._x_max - self._x_min) / self._x_num # The resolution in x. Note: This isn't a ROS parameter. What will you do instead?
+        self._y_num = rospy.get_param("~y/num")
+        self._y_min = rospy.get_param("~y/min")
+        self._y_max = rospy.get_param("~y/max")
+        self._y_res = (self._y_max - self._y_min) / self._y_num # The resolution in y. Note: This isn't a ROS parameter. What will you do instead?
 
         # Update parameters.
         if not rospy.has_param("~update/occupied"):
@@ -83,13 +83,13 @@ class OccupancyGrid2d(object):
 
         # Topics.
         # TODO! You'll need to set values for class variables called:
-        # -- self._sensor_topic
-        # -- self._vis_topic
+        self._sensor_topic = rospy.get_param("~topics/sensor")
+        self._vis_topic = rospy.get_param("~topics/vis")
 
         # Frames.
         # TODO! You'll need to set values for class variables called:
-        # -- self._sensor_frame
-        # -- self._fixed_frame
+        self._sensor_frame = rospy.get_param("~frames/sensor")
+        self._fixed_frame  = rospy.get_param("~frames/fixed")
 
         return True
 
@@ -147,13 +147,14 @@ class OccupancyGrid2d(object):
 
             # Get angle of this ray in fixed frame.
             # TODO!
-
+            angle = yaw + msg.angle_min + (msg.angle_increment * idx)
+            # print("range min", msg.range_min)
             # Throw out this point if it is too close or too far away.
             if r > msg.range_max:
                 rospy.logwarn("%s: Range %f > %f was too large.",
                               self._name, r, msg.range_max)
                 continue
-            if r < msg.range_min:
+            if r < msg.range_min + 0.1:
                 rospy.logwarn("%s: Range %f < %f was too small.",
                               self._name, r, msg.range_min)
                 continue
@@ -163,6 +164,35 @@ class OccupancyGrid2d(object):
             # Only update each voxel once. 
             # The occupancy grid is stored in self._map
             # TODO!
+            r_point_x = sensor_x + np.cos(angle)*r
+            r_point_y = sensor_y + np.sin(angle)*r
+
+            # x_pos = np.arange(r_point_x, sensor_x, (sensor_x-r_point_x)/(2*r))
+            # y_pos = np.arange(r_point_y, sensor_y, (sensor_y-r_point_y)/(2*r))
+
+            # print(r_point_x, sensor_x, r, (r_point_x-sensor_x)/(2*r + 0.001))
+            x_pos = np.arange(sensor_x, r_point_x, (r_point_x-sensor_x)/(2*r+0.001))[::-1]
+            y_pos = np.arange(sensor_y, r_point_y, (r_point_y-sensor_y)/(2*r+0.001))[::-1]
+            assert(len(x_pos) == len(y_pos))
+
+            thresh_max = 3
+            thresh_min = -3
+
+            v = self.PointToVoxel(r_point_x, r_point_y)
+            new_odds = self._map[v[0]][v[1]] + 0.1 
+            self._map[v[0]][v[1]] = new_odds if new_odds <= thresh_max else thresh_max 
+            prev_v = self.PointToVoxel( r_point_x, r_point_y )
+            
+            for i in range(len(x_pos)):
+                v = self.PointToVoxel( x_pos[i], y_pos[i] )
+                if v == prev_v:
+                    continue
+
+                new_odds = self._map[v[0]][v[1]] - 0.1 
+                self._map[v[0]][v[1]] = new_odds if new_odds >= thresh_min else thresh_min 
+                prev_v = self.PointToVoxel( v[0], v[1] )
+
+
 
         # Visualize.
         self.Visualize()
