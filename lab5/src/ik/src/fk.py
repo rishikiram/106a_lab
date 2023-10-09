@@ -11,9 +11,13 @@ def fk_service_client():
     fk_service_proxy = rospy.ServiceProxy(service_name, SolvePositionFK)
     fk_request = SolvePositionFKRequest()
     joints = JointState()
+    
     # YOUR CODE HERE
+    temp_str = input('List of joints:')
+    joint_command = [float(i) for i in temp_str.split(',')]
+
     joints.name = ['right_j0', 'right_j1', 'right_j2', 'right_j3','right_j4', 'right_j5', 'right_j6']
-    joint_input = []
+    joint_input = joint_command
     joints.position = joint_input
     # Add desired pose for forward kinematics
     fk_request.configuration.append(joints)
