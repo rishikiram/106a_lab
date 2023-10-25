@@ -84,7 +84,7 @@ def controller(waypoint):
 
       # Process trans to get your state error
       # Generate a control command to send to the robot
-      
+      x_error = waypoint_in_base_link.pose.position.x
       error = ## TODO: what are two values that we can use for this np.array, and what are the dimensions
       
       # proportional term
@@ -114,7 +114,8 @@ def controller(waypoint):
       if ... : ##TODO: what is our stopping condition/how do we know to go to the next waypoint?
         return
 
-    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+      print("TF Error in Turtlebot Controller: " + e)
       pass
     # Use our rate object to sleep until it is time to publish again
     r.sleep()
@@ -126,7 +127,8 @@ def planning_callback(msg):
 
     ## TODO: write a loop to loop over our waypoints and call the controller function on each waypoint
 
-  except rospy.ROSInterruptException:
+  except rospy.ROSInterruptException as e:
+    print("Exception thrown in planning callback: " + e)
     pass
       
 
