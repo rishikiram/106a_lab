@@ -77,7 +77,7 @@ def plan_curved_trajectory(target_position):
     tfListener = tf2_ros.TransformListener(tfBuffer)## TODO: initialize a transform listener
     while not rospy.is_shutdown():
         try:
-            trans = tfBuffer.lookup_transform("/camera_link", "/odom", rospy.Time())## TODO: apply a lookup transform between our world frame and turtlebot frame
+            trans = tfBuffer.lookup_transform("odom", "base_footprint", rospy.Time())## TODO: apply a lookup transform between our world frame and turtlebot frame
             print(trans)
             break
         except:
