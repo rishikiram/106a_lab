@@ -53,7 +53,7 @@ class ObjectDetector:
         # TODO: Use the camera intrinsics to convert pixel coordinates to real-world coordinates
         X = (u - self.cx) * depth / self.fx
         Y = (v - self.cy) * depth / self.fy
-        Z = depth
+        Z = depth 
         return X, Y, Z
 
     def color_image_callback(self, msg):
